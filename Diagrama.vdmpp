@@ -1,0 +1,31 @@
+class Diagrama
+	types
+	
+	public Objeto:: nome: seq of char
+					tipo: seq of char
+	inv mk_Objeto(nome, tipo) ==
+		len(nome) > 1 and tipo in set { "message", "action", "asynchronous", "link", "destroy", "call", "create", "other"}
+	values
+-- TODO Define values here
+	instance variables
+
+	public segmentos : seq of Segmento;
+	public objetos : seq of Objeto;
+	public titulo : seq of char;
+	
+	
+	operations
+-- TODO Define operations here
+	functions
+-- TODO Define functiones here
+	traces
+-- TODO Define Combinatorial Test Traces here
+end Diagrama
+
+class Segmento
+
+instance variables
+	public nome: seq of char;
+	inv len(nome) > 0
+end Segmento
+
