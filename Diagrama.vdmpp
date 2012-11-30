@@ -37,7 +37,7 @@ end Diagrama
 
 
 
-abstract class Segmento
+class Segmento
 
 instance variables
 	public nome: seq of char;

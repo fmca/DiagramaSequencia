@@ -1,0 +1,11 @@
+class DiagramaTeste
+
+ operations
+   -- operação auxiliar, que tira partido do facto do 
+   -- interpretador parar quando se viola uma pré-condição
+  public AssertTrue : bool ==> ()
+  AssertTrue(a) == return
+    pre a;
+
+
+end DiagramaTeste
