@@ -88,19 +88,7 @@ TestEditarObjeto() ==
 		AssertTrue(tamanho+1 = len diag.objetos);
 	);
 	
-	public TestInserirSegmento : () ==> ()
-TestInserirSegmento () ==
-	(
-		dcl seg : Segmento := new Segmento("s", 1);
-		dcl seg2: Segmento;
-		dcl tamanho : nat1 := len diag.segmentos;
-		diag.inserirSegmento(seg);
-		seg2 := diag.getSegmento(len diag.segmentos);
-		AssertTrue(seg.nome = seg2.nome);
-		AssertTrue(seg.id = seg2.id);
-		AssertTrue(tamanho+1 = len diag.segmentos);
-		
-	);
+
 
 public TestEliminarSegmento : () ==> ()
 TestEliminarSegmento () ==
@@ -144,5 +132,6 @@ TestEliminarObjeto () ==
 			
 		AssertTrue(tamanho-1 = len diag.objetos);
 		
-	);		
+	);	
+
 end DiagramaTeste

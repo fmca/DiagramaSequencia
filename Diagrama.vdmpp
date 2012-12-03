@@ -1,48 +1,44 @@
 class Diagrama
 
--- TODO Define values here
 	instance variables
 
-	public segmentos : seq of Segmento;
-	public objetos : seq of Objeto;
-	public titulo : seq of char;
-	public limite : int;
+	public segmentos : seq of Segmento := [];
+	public objetos : seq of Objeto:= [];
+	public titulo : seq of char:=[];
+	public limite : int:=5;
 	
 	
 	operations
 	
 	--Getters
 	
-	public getSegmento: nat1 ==> Segmento
-	getSegmento(ord) ==
-	( 
-		dcl s: Segmento;
-		s:=segmentos(ord);
-		return s;
-	)
-	pre ord >0 and ord <= len(segmentos);
-
+	
 
 	public getObjeto: nat1 ==> Objeto
-	getObjeto(ord) ==
-	(
-		dcl o: Objeto;
-		o:=objetos(ord);
-		return o;
-	)
-	pre ord >0 and ord <= len(objetos);
+		getObjeto(ord) ==
+		(
+			dcl o: Objeto;
+			o:=objetos(ord);
+			return o;
+		) pre ord in set inds objetos;
+
+	public getSegmento: nat1 ==> Segmento
+		getSegmento(ord) ==
+		( 
+			dcl s: Segmento;
+			s:=segmentos(ord);
+			return s;
+		) pre ord in set inds segmentos;
 
 
 	---------------------------------------------
 	public inserirSegmento: Segmento ==> ()
-	inserirSegmento(sgmt) ==
-		segmentos := segmentos ^ [sgmt]
+		inserirSegmento(sgmt) ==
+			segmentos := segmentos ^ [sgmt]
+			
+			
+		pre len(segmentos) < limite and not exists s in set elems segmentos & s.id = sgmt.id;	
 		
-		
-	pre len(segmentos) < limite;
-	
-	
-	
 	---------------------------------------------
 	public inserirSegmento: Segmento * nat1 ==> ()
 	inserirSegmento(sgmt, ord) == 
@@ -50,7 +46,7 @@ class Diagrama
 		if(ord=1) then segmentos:= [sgmt] ^ segmentos
 		else segmentos := segmentos(1,..., ord-1) ^ [sgmt] ^ segmentos(ord, ..., len(segmentos))
 		
-	pre ord > 0 and ord <= len(segmentos);
+	pre ord in set inds (segmentos) and not exists s in set elems segmentos & s.id = sgmt.id;
 	
 	---------------------------------------------
 	
@@ -58,9 +54,7 @@ class Diagrama
 	editarSegmento(ord, novoNome) ==
 		(
 			segmentos(ord).nome := novoNome;
-		)
-		pre ord > 0 and ord <= len(segmentos) and novoNome <> ""
-		post segmentos(ord).nome <> "";
+		) pre ord in set inds segmentos and novoNome <> "";
 	
 	---------------------------------------------
 	
@@ -69,7 +63,7 @@ class Diagrama
 		
 		objetos := objetos ^ [obj]
 		
-	pre len(objetos) < limite;
+	pre len(objetos) < limite and not exists s in set elems objetos & s.id = obj.id;
 	
 	---------------------------------------------
 	
@@ -79,7 +73,7 @@ class Diagrama
 		if(ord=1) then objetos:= [obj] ^ objetos
 		else objetos := objetos(1,..., ord-1) ^ [obj] ^ objetos(ord, ..., len(objetos))
 		
-	pre ord > 0 and ord <= len(objetos);
+	pre ord in set inds (objetos) and not exists s in set elems objetos & s.id = obj.id;
 	
 	---------------------------------------------
 	
@@ -88,11 +82,30 @@ class Diagrama
 		(
 			objetos(ord).nome := novoNome;
 			objetos(ord).tipo := novoTipo;
-		)
-		pre ord > 0 and ord <= len(objetos) and novoNome <> ""
-		post  objetos(ord).nome <> "";
+		)pre ord in set inds (objetos);
 	
-			
+	---------------------------------------------
+	
+	public eliminarSegmento: nat1 ==> ()
+	eliminarSegmento(ord) ==
+		if(ord=1) then segmentos:= segmentos(2,...,len(segmentos))
+		else segmentos := segmentos(1,..., ord-1) ^  segmentos(ord+1, ..., len(segmentos))
+	
+	pre ord in set inds (segmentos);
+		
+	---------------------------------------------
+	
+	public eliminarObjeto: nat1 ==> ()
+	eliminarObjeto(ord) ==
+		if(ord=1) then objetos:= objetos(2,...,len(objetos))
+		else objetos := objetos(1,..., ord-1) ^  objetos(ord+1, ..., len(objetos))
+		
+	pre ord in set inds (objetos);
+	
+	---------------------------------------------
+	
+	
+		
 end Diagrama
 
 
@@ -109,7 +122,7 @@ operations
 	(
 		nome:= n;
 		id:=i;
-	);
+	)pre i>0;
 end Segmento
 
 class Objeto
@@ -134,8 +147,56 @@ Objeto (n, i, t) ==
 end Objeto
 
 
-class Mensagem is subclass of Segmento
+class BlocoLoop is subclass of Segmento
+operations
+	public BlocoLoop : seq of char * nat1 * seq of Mensagem ==> BlocoLoop
+	BlocoLoop(n, i, m) ==
+		(
+			nome := n;
+			id := i;
+			loopSeq := m;
+		)pre i > 0 and ((len nome) > 0) and isofclass(BlocoLoop, BlocoLoop(n, i, m))
+		post self.nome = n and self.id = i and self.loopSeq = m;
 instance variables
+	public loopSeq: seq of Mensagem;
+	
+end BlocoLoop
+
+
+class BlocoAlt is subclass of Segmento
+operations 
+	public BlocoAlt: seq of char * nat1 * seq of Mensagem * seq of Mensagem ==> BlocoAlt
+	BlocoAlt(n, i, tS, eS) ==
+		(
+			nome := n;
+			id := i;
+			thenSeq := tS;
+			elseSeq := eS;
+		) pre ((len nome) > 0) and isofclass(BlocoAlt, BlocoAlt(n, i, tS, eS))
+		post self.nome = n and self.id = i and self.thenSeq = tS and self.elseSeq = eS;
+instance variables
+	public thenSeq: seq of Mensagem;
+	public elseSeq: seq of Mensagem;
+	
+end BlocoAlt
+
+class Mensagem is subclass of Segmento
+
+operations
+	public Mensagem: seq of char * nat1 * seq of char * Objeto * Objeto ==> Mensagem
+	Mensagem(n, i, t, objO, objD) ==
+	(	
+		nome:=n;
+		id:=i;
+		tipo:=t;
+		objOrigem:=objO;
+		objDestino:=objD;
+	)pre isofclass(Mensagem, Mensagem(n, i, t, objO, objD)) and ((len nome) > 0) and (tipo in set {"message", "action", "asynchronous", "link", "destroy", "call", "create", "other"})
+	post self.nome =n and self.id = i and self.tipo = t and self.objOrigem = objO and self.objDestino = objD;
+	
+instance variables
+	public objOrigem: Objeto;
+	public objDestino: Objeto;
 	public tipo : seq of char;
 	inv tipo in set { "message", "action", "asynchronous", "link", "destroy", "call", "create", "other"}
 
@@ -144,18 +205,7 @@ end Mensagem
 
 
 
-class BlocoAlt is subclass of Segmento
-
-instance variables
-	public thenSeq: seq of Mensagem;
-	public elseSeq: seq of Mensagem;
-	
-end BlocoAlt
 
 
-class BlocoLoop is subclass of Segmento
 
-instance variables
-	public loopSeq: seq of Mensagem;
-	
-end BlocoLoop
+
