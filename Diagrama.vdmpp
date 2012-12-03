@@ -9,11 +9,16 @@ class Diagrama
 	
 	
 	operations
+	public Diagrama: seq of char * nat1 ==> Diagrama
+	Diagrama(t, l) ==
+	(
+		titulo :=t;
+		limite :=l;
+	)pre l>0 and t <> ""
+	 post titulo = t and limite = l;
+	
 	
 	--Getters
-	
-	
-
 	public getObjeto: nat1 ==> Objeto
 		getObjeto(ord) ==
 		(
@@ -128,11 +133,11 @@ end Segmento
 class Objeto
 instance variables 
 
-public nome: seq of char;
-public tipo: seq of char;
+public nome: seq of char:=[];
+public tipo: seq of char:="Object";
 public id : int;
 
-inv len(nome) > 1 and tipo in set {"Actor", "Unit", "Object", "Other"};
+inv tipo in set {"Actor", "Unit", "Object", "Other"};
 
 operations 
 public Objeto : seq of char * nat1 * seq of char ==> Objeto
@@ -141,7 +146,8 @@ Objeto (n, i, t) ==
 		nome:= n;
 		id:=i;
 		tipo:=t;
-	);
+	)pre len(n) > 0 and t in set {"Actor", "Unit", "Object", "Other"}
+	 post nome = n and id=i and tipo=t;
 
 
 end Objeto
