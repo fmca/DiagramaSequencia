@@ -102,10 +102,33 @@ class Diagrama
 	
 	public eliminarObjeto: nat1 ==> ()
 	eliminarObjeto(ord) ==
-		if(ord=1) then objetos:= objetos(2,...,len(objetos))
-		else objetos := objetos(1,..., ord-1) ^  objetos(ord+1, ..., len(objetos))
+	
+	(
 		
-	pre ord in set inds (objetos);
+		dcl segmentos2: seq of Segmento:= [];
+		
+		for all s in set elems segmentos do
+		(
+			if objetos(ord).id not in set s.ids then
+			(
+				segmentos2 := segmentos2 ^ [s]
+			);
+			
+			segmentos := segmentos2;
+		);
+		
+		if (ord=1) then objetos:= objetos(2,...,len(objetos))
+		
+		else 
+		
+			objetos := objetos(1,..., ord-1) ^  objetos(ord+1, ..., len(objetos)
+		);
+		
+	)pre ord in set inds (objetos);
+		
+		
+		
+		
 	
 	---------------------------------------------
 	
@@ -120,14 +143,36 @@ class Segmento
 instance variables
 	public nome: seq of char;
 	public id : nat1;
+	public ids: set of nat1:= {};
 	inv len(nome) > 0
+	
 operations
 	public Segmento : seq of char * nat1 ==> Segmento
 	Segmento (n, i) ==
 	(
 		nome:= n;
 		id:=i;
+		
 	)pre i>0;
+	
+	public Segmento : seq of char * nat1 * nat1==> Segmento
+	Segmento (n, i, ii) ==
+	(
+		nome:= n;
+		id:=i;
+		ids:= ids union {ii};
+		
+	)pre i>0;
+	
+	public getIds: seq of Segmento ==> set of nat1
+	getIds(sgmts) ==
+		(
+			dcl nS: set of nat1;
+			for all s in set elems sgmts do
+				nS:= nS union {s.id};
+			return nS;
+		);
+	
 end Segmento
 
 class Objeto
@@ -161,6 +206,7 @@ operations
 			nome := n;
 			id := i;
 			loopSeq := m;
+			ids := getIds(loopSeq);
 		)pre i > 0 and ((len nome) > 0) and isofclass(BlocoLoop, BlocoLoop(n, i, m))
 		post self.nome = n and self.id = i and self.loopSeq = m;
 instance variables
@@ -178,6 +224,7 @@ operations
 			id := i;
 			thenSeq := tS;
 			elseSeq := eS;
+			ids:= getIds(thenSeq) union getIds(elseSeq);
 		) pre ((len nome) > 0) and isofclass(BlocoAlt, BlocoAlt(n, i, tS, eS))
 		post self.nome = n and self.id = i and self.thenSeq = tS and self.elseSeq = eS;
 instance variables
@@ -197,6 +244,7 @@ operations
 		tipo:=t;
 		objOrigem:=objO;
 		objDestino:=objD;
+		ids:= {objOrigem.id, objDestino.id}
 	)pre isofclass(Mensagem, Mensagem(n, i, t, objO, objD)) and ((len nome) > 0) and (tipo in set {"message", "action", "asynchronous", "link", "destroy", "call", "create", "other"})
 	post self.nome =n and self.id = i and self.tipo = t and self.objOrigem = objO and self.objDestino = objD;
 	
