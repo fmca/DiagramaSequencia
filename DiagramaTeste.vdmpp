@@ -3,7 +3,8 @@ class DiagramaTeste
 
 instance variables
 
-public diag : Diagrama := new Diagrama();
+public diag : Diagrama := new Diagrama("teste", 10);
+public id: nat1 := 1;
 
 
 operations
@@ -12,28 +13,43 @@ operations
   public AssertTrue : bool ==> ()
   AssertTrue(a) == return
     pre a;
+	
+	
+public reset: () ==> ()
+reset() == 
+	diag := new Diagrama("teste", 10);
+	
+	
+public geradorId: () ==> nat1
+geradorId() ==
+	(
+		dcl i: nat1 := id;
+		id:= id + 1;
+		return i;
+	);
+		
 
 public TestInserirSegmento : () ==> ()
 TestInserirSegmento () ==
 	(
-		dcl seg : Segmento := new Segmento("s", 1);
+		dcl seg : Segmento := new Segmento("s", geradorId());
 		dcl seg2: Segmento;
-		dcl tamanho : nat1 := len diag.segmentos;
+		dcl tamanho : nat := len diag.segmentos;
 		diag.inserirSegmento(seg);
 		seg2 := diag.getSegmento(len diag.segmentos);
 		AssertTrue(seg.nome = seg2.nome);
 		AssertTrue(seg.id = seg2.id);
 		AssertTrue(tamanho+1 = len diag.segmentos);
-		
+
 	);
 
 public TestInserirSegmentoOrdem: nat1 ==> ()
 TestInserirSegmentoOrdem(ord) ==
 
 	(
-		dcl seg : Segmento := new Segmento("s", 1);
+		dcl seg : Segmento := new Segmento("s", geradorId());
 		dcl seg2: Segmento;
-		dcl tamanho : nat1 := len diag.segmentos;
+		dcl tamanho : nat := len diag.segmentos;
 		diag.inserirSegmento(seg, ord);
 		seg2 := diag.getSegmento(ord);
 		AssertTrue(seg.nome = seg2.nome);
@@ -41,12 +57,12 @@ TestInserirSegmentoOrdem(ord) ==
 		AssertTrue(tamanho+1 = len diag.segmentos);
 	);
 	
-public TestEditarSegmento: nat1 ==> ()
-TestEditarSegmento(ord) ==
+public TestEditarSegmento: () ==> ()
+TestEditarSegmento() ==
 	(
-		dcl seg : Segmento := new Segmento("s", 1);
+		dcl seg : Segmento := new Segmento("s", geradorId());
 		dcl seg2: Segmento;
-		dcl tamanho : nat1 := len diag.segmentos;
+		dcl tamanho : nat := len diag.segmentos;
 		diag.inserirSegmento(seg, 1);
 		
 		diag.editarSegmento(1, "abc");
@@ -61,9 +77,9 @@ TestEditarSegmento(ord) ==
 public TestInserirObjeto : () ==> ()
 TestInserirObjeto () ==
 	(
-		dcl obj : Objeto := new Objeto("nome1", 1, "tipo1");
+		dcl obj : Objeto := new Objeto("nome1", geradorId(), "Actor");
 		dcl obj2: Objeto;
-		dcl tamanho : nat1 := len diag.objetos;
+		dcl tamanho : nat := len diag.objetos;
 		diag.inserirObjeto(obj);
 		obj2 := diag.getObjeto(len diag.objetos);
 		AssertTrue(obj.nome = obj2.nome);
@@ -74,17 +90,18 @@ TestInserirObjeto () ==
 public TestEditarObjeto: () ==> ()
 TestEditarObjeto() ==
 	(
-		dcl seg : Objeto := new Objeto("nome1", 1, "Actor");
-		dcl seg2: Objeto;
-		dcl tamanho : nat1 := len diag.objetos;
-		diag.inserirObjeto(seg, 1);
+		dcl obj : Objeto := new Objeto("nome1", geradorId(), "Actor");
+		dcl obj2: Objeto;
+		dcl tamanho : nat := len diag.objetos;
+		reset();
+		diag.inserirObjeto(obj, 1);
 		
 		diag.editarObjeto("nome2", "Object", 1);
 		
-		seg2 := diag.getObjeto(1);
-		AssertTrue(seg2.nome = "nome2");
-		AssertTrue(seg.id = seg2.id);
-		AssertTrue(seg2.tipo = "Object");
+		obj2 := diag.getObjeto(1);
+		AssertTrue(obj2.nome = "nome2");
+		AssertTrue(obj.id = obj2.id);
+		AssertTrue(obj2.tipo = "Object");
 		AssertTrue(tamanho+1 = len diag.objetos);
 	);
 	
@@ -93,45 +110,45 @@ TestEditarObjeto() ==
 public TestEliminarSegmento : () ==> ()
 TestEliminarSegmento () ==
 	(
-		dcl seg : Segmento := new Segmento("nome1", 1);
-		dcl seg1: Segmento := new Segmento("nome2", 2);
-		dcl seg11: Segmento := new Segmento("nome3", 3);
-		
-		dcl seg2: Segmento;
-		dcl tamanho : nat1;
+		dcl seg : Segmento := new Segmento("nome1", geradorId());
+		dcl seg1: Segmento := new Segmento("nome2", geradorId());
+		dcl seg11: Segmento := new Segmento("nome3", geradorId());
+
+		dcl tamanho : nat;
+		reset();
 		diag.inserirSegmento(seg);
 		diag.inserirSegmento(seg1);
 		diag.inserirSegmento(seg11);
 		tamanho := len diag.segmentos;
-		diag.eliminarSegmento(2);
+		
+		
+		diag.eliminarSegmento(1);
 		
 		for all s in set elems diag.segmentos do
 			AssertTrue(s.id <> seg.id);
 			
 		AssertTrue(tamanho-1 = len diag.segmentos);
-		
 	);
 	
 public TestEliminarObjeto : () ==> ()
 TestEliminarObjeto () ==
 	(
-		dcl seg : Objeto := new Objeto("nome1", 1, "Actor");
-		dcl seg1: Objeto := new Objeto("nome2", 2, "Object");
-		dcl seg11: Objeto := new Objeto("nome3", 3, "Actor");
+		dcl obj : Objeto := new Objeto("nome1", geradorId(), "Actor");
+		dcl obj1: Objeto := new Objeto("nome2", geradorId(), "Object");
+		dcl obj11: Objeto := new Objeto("nome3", geradorId(), "Actor");
 		
-		dcl seg2: Objeto;
-		dcl tamanho : nat1;
-		diag.inserirObjeto(seg);
-		diag.inserirObjeto(seg1);
-		diag.inserirObjeto(seg11);
+		dcl tamanho : nat;
+		reset();
+		diag.inserirObjeto(obj);
+		diag.inserirObjeto(obj1);
+		diag.inserirObjeto(obj11);
 		tamanho := len diag.objetos;
 		diag.eliminarObjeto(2);
 		
 		for all s in set elems diag.objetos do
-			AssertTrue(s.id <> seg.id);
+			AssertTrue(s.id <> obj1.id);
 			
 		AssertTrue(tamanho-1 = len diag.objetos);
-		
 	);	
 
 end DiagramaTeste
