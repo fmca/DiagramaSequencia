@@ -56,7 +56,7 @@ class Diagrama
 			segmentos := segmentos ^ [sgmt]
 			
 			
-		pre len(segmentos) < limite and sgmt.ids subset getIdsObjetos() and (not exists s in set elems segmentos & s.id = sgmt.id) ;	
+		pre sgmt.ids subset getIdsObjetos() and (not exists s in set elems segmentos & s.id = sgmt.id) ;	
 		
 	---------------------------------------------
 	public inserirSegmento: Segmento * nat1 ==> ()
@@ -83,7 +83,7 @@ class Diagrama
 		
 		objetos := objetos ^ [obj]
 		
-	pre len(objetos) < limite and not exists s in set elems objetos & s.id = obj.id;
+	pre not exists s in set elems objetos & s.id = obj.id;
 	
 	---------------------------------------------
 	
@@ -149,14 +149,22 @@ class Diagrama
 		(
 			dcl seqsgmts: seq of seq of Segmento:= [];
 			dcl seqsgmt: seq of Segmento:=[];
-			dcl l: nat:= len segmentos;
+			dcl l: nat:= 1;
+			dcl alts: nat:=1;
+			dcl loops: nat:=1;
+			dcl c: nat:=1;
 			for all s in set elems segmentos do 
 				if(isofclass(BlocoLoop, s)) then 
 					(
-						l := limite;
-						exit;
+						loops := limite * loops;
+					)
+				elseif(isofclass(BlocoAlt, s)) then
+					(
+						alts:=2 * alts;
 					);
 					
+			l := loops*alts;	
+				
 			for i=1 to l do
 				(
 					seqsgmt:=[];
@@ -168,8 +176,9 @@ class Diagrama
 								)
 							elseif isofclass(BlocoLoop, segmentos(j)) then
 								( 
-									seqsgmt:= seqsgmt ^ segmentos(j).getSequencias(limite)((j mod i)+1);
-			
+									if(c > alts) then c:=1;
+									seqsgmt:= seqsgmt ^ segmentos(j).getSequencias(limite)(c);
+								    c:= c +1;
 								)
 							elseif isofclass(BlocoAlt, segmentos(j)) then
 								(
