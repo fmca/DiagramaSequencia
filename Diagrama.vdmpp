@@ -142,11 +142,49 @@ class Diagrama
 	)pre ord in set inds (objetos);
 		
 		
-		
-		
-	
 	---------------------------------------------
 	
+	public calcularSequencias: () ==> seq of seq of Segmento
+	calcularSequencias() ==
+		(
+			dcl seqsgmts: seq of seq of Segmento:= [];
+			dcl seqsgmt: seq of Segmento:=[];
+			dcl l: nat:= len segmentos;
+			for all s in set elems segmentos do 
+				if(isofclass(BlocoLoop, s)) then 
+					(
+						l := limite;
+						exit;
+					);
+					
+			for i=1 to l do
+				(
+					seqsgmt:=[];
+					for j=1 to len(segmentos) do
+						(
+							if isofclass(Mensagem, segmentos(j)) then 
+								(
+									seqsgmt:= seqsgmt ^ [segmentos(j)]
+								)
+							elseif isofclass(BlocoLoop, segmentos(j)) then
+								( 
+									seqsgmt:= seqsgmt ^ segmentos(j).getSequencias(limite)((j mod i)+1);
+			
+								)
+							elseif isofclass(BlocoAlt, segmentos(j)) then
+								(
+									seqsgmt:= seqsgmt ^segmentos(j).getSequencias()((i mod 2)+1);
+								)
+							else 
+								(
+									seqsgmt:= seqsgmt ^ [segmentos(j)]
+								);
+						);
+					seqsgmts := seqsgmts ^ [seqsgmt];
+				);
+				
+				return seqsgmts;
+		);
 	
 		
 end Diagrama
@@ -159,7 +197,7 @@ instance variables
 	public nome: seq of char;
 	public id : nat1;
 	public ids: set of nat1:= {};
-	inv len(nome) > 0
+	
 	
 operations
 	public Segmento : seq of char * nat1 ==> Segmento
@@ -169,6 +207,13 @@ operations
 		id:=i;
 		
 	)pre i>0;
+	
+	
+	public getSequencias: () ==> seq of seq of Segmento
+	getSequencias() == return [[self]];
+	
+	public getSequencias: nat ==> seq of seq of Segmento
+	getSequencias(l) == return [[self]];
 	
 	
 	public getIds: seq of Segmento ==> set of nat1
@@ -216,6 +261,22 @@ operations
 			ids := getIds(loopSeq);
 		)pre i > 0 and ((len n) > 0)
 		post self.nome = n and self.id = i and self.loopSeq = m;
+		
+	public getSequencias: nat  ==> seq of seq of Segmento
+	getSequencias (l) == 
+		(
+			dcl seqsgmts: seq of seq of Segmento:= [];
+			dcl seqsgmt: seq of Segmento:=[];
+			
+			for i=1 to l do
+				(
+					 seqsgmt:=seqsgmt^loopSeq;
+					 seqsgmts:=seqsgmts ^ [seqsgmt];
+				);
+				
+			return seqsgmts;
+		)pre l>=1;
+	
 instance variables
 	public loopSeq: seq of Mensagem;
 	
@@ -234,6 +295,11 @@ operations
 			ids:= getIds(thenSeq) union getIds(elseSeq);
 		) pre ((len n) > 0)
 		post self.nome = n and self.id = i and self.thenSeq = tS and self.elseSeq = eS;
+		
+	public getSequencias: () ==> seq of seq of Segmento
+	getSequencias() ==
+		return [thenSeq, elseSeq];
+		
 instance variables
 	public thenSeq: seq of Mensagem;
 	public elseSeq: seq of Mensagem;
@@ -254,6 +320,11 @@ operations
 		ids:= {objOrigem.id, objDestino.id}
 	)pre ((len n) > 0) and (t in set {"message", "action", "asynchronous", "link", "destroy", "call", "create", "other"})
 	post self.nome =n and self.id = i and self.tipo = t and self.objOrigem = objO and self.objDestino = objD;
+	
+	public getSequencias: () ==> seq of seq of Segmento
+	getSequencias() ==
+		return [[self]];
+	
 	
 instance variables
 	public objOrigem: Objeto;

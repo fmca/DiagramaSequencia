@@ -1,6 +1,5 @@
 class DiagramaTeste
 
-
 instance variables
 
 public diag : Diagrama := new Diagrama("teste", 10);
