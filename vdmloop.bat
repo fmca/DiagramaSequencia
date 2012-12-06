@@ -4,6 +4,11 @@ rem Assumes specification is in Word RTF files
 
 set S1=Diagrama.rtf
 set S2=DiagramaTeste.rtf
+set S3=Segmento.rtf
+set S4=Mensagem.rtf
+set S5=BlocoAlt.rtf
+set S6=BlocoLoop.rtf
+set S7=Objeto.rtf
 
 
 "C:\Program Files (x86)\The VDM++ Toolbox Lite v8.3.1\bin\vppde" -p -R vdm.tc %S1% %S2%

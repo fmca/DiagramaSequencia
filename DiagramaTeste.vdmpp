@@ -13,6 +13,9 @@ operations
   AssertTrue(a) == return
     pre a;
 	
+public AssertFalse : bool ==> ()
+  AssertFalse(a) == return
+    pre not a;
 	
 public reset: () ==> ()
 reset() == 
@@ -27,7 +30,7 @@ geradorId() ==
 		return i;
 	);
 		
-
+-- InserirSegmento operations valid
 public TestInserirSegmento : () ==> ()
 TestInserirSegmento () ==
 	(
@@ -42,20 +45,126 @@ TestInserirSegmento () ==
 
 	);
 
-public TestInserirSegmentoOrdem: nat1 ==> ()
-TestInserirSegmentoOrdem(ord) ==
+public TestInserirSegmentoOrdem: () ==> ()
+TestInserirSegmentoOrdem() ==
 
 	(
+		
 		dcl seg : Segmento := new Segmento("s", geradorId());
+		dcl segAux : Segmento := new Segmento("s", geradorId());
 		dcl seg2: Segmento;
-		dcl tamanho : nat := len diag.segmentos;
-		diag.inserirSegmento(seg, ord);
-		seg2 := diag.getSegmento(ord);
+		dcl tamanho : nat ;
+		
+		diag.inserirSegmento(segAux);
+		tamanho:= len diag.segmentos;
+		diag.inserirSegmento(seg, 1);
+		
+		seg2 := diag.getSegmento(1);
 		AssertTrue(seg.nome = seg2.nome);
 		AssertTrue(seg.id = seg2.id);
 		AssertTrue(tamanho+1 = len diag.segmentos);
 	);
+
+-- end InserirSegmento operations valid	
+
+-- InserirSegmento operations invalid
+
+-- tenta inserir um id negativo
+public TestInserirSegmentoNegativeID : () ==> ()
+TestInserirSegmentoNegativeID () ==
+	(
+		dcl seg : Segmento := new Segmento("s", -1);
+		dcl seg2: Segmento;
+		dcl tamanho : nat := len diag.segmentos;
+		diag.inserirSegmento(seg);
+		seg2 := diag.getSegmento(len diag.segmentos);
+		AssertFalse(seg.nome = seg2.nome);
+		AssertFalse(seg.id = seg2.id);
+		AssertFalse(tamanho+1 = len diag.segmentos);
+
+	);
 	
+-- tenta inserir um id repetido
+public TestInserirSegmentoSameID : () ==> ()
+TestInserirSegmentoSameID () ==
+	(
+		dcl id1 : nat := geradorId();
+		dcl seg1 : Segmento := new Segmento("s", id1);
+		dcl seg2 : Segmento := new Segmento("s2", id1);
+		
+		dcl seg3: Segmento;
+		dcl tamanhoOriginal : nat := len diag.segmentos;
+		
+		diag.inserirSegmento(seg1);
+		diag.inserirSegmento(seg2); -- deve falhar aqui
+		
+		seg3 := diag.getSegmento(len diag.segmentos);
+		AssertFalse(seg3.nome = seg2.nome);
+		AssertFalse(seg3.id = seg2.id);
+		AssertTrue(tamanhoOriginal+1 = len diag.segmentos); -- ao todo insere apenas um elemento
+
+	);
+	
+-- tenta inserir um segmento com nome vazio
+public TestInserirSegmentoNoName : () ==> ()
+TestInserirSegmentoNoName () ==
+	(
+		dcl id1 : nat := geradorId();
+		dcl seg1 : Segmento := new Segmento("s", id1);
+		
+		dcl seg3: Segmento;
+		dcl tamanhoOriginal : nat := len diag.segmentos;
+		
+		diag.inserirSegmento(seg1); -- deve falhar aqui
+		
+		seg3 := diag.getSegmento(len diag.segmentos);
+		AssertFalse(seg3.nome = seg1.nome);
+		AssertFalse(seg3.id = seg1.id);
+		AssertTrue(tamanhoOriginal = len diag.segmentos); -- tamanho não deve ter mudadp
+	);
+	
+-- tenta inserir segmento com uma ordem negativa
+public TestInserirSegmentoOrdemNegativa: () ==> ()
+TestInserirSegmentoOrdemNegativa() ==
+
+	(
+		dcl seg : Segmento := new Segmento("s", geradorId());
+		dcl seg2: Segmento;
+		
+		dcl tamanhoOriginal : nat := len diag.segmentos;
+		dcl ord : nat := -1;
+		
+		diag.inserirSegmento(seg, ord);
+		seg2 := diag.getSegmento(ord); -- deve falhar aqui
+		
+		AssertFalse(seg.nome = seg2.nome);
+		AssertFalse(seg.id = seg2.id);
+		AssertFalse(tamanhoOriginal+1 = len diag.segmentos);
+	);
+	
+	
+-- tenta inserir segmento com uma sequencial incorreta (ordem muito elevada)
+public TestInserirSegmentoOrdemElevada: () ==> ()
+TestInserirSegmentoOrdemElevada() ==
+
+	(
+		dcl seg : Segmento := new Segmento("s", geradorId());
+		dcl seg2: Segmento;
+		
+		dcl tamanhoOriginal : nat := len diag.segmentos;
+		dcl ord : nat := 100000;
+		
+		diag.inserirSegmento(seg, ord); -- deve falhar aqui
+		seg2 := diag.getSegmento(ord); -- deve falhar aqui
+		
+		AssertFalse(seg.nome = seg2.nome);
+		AssertFalse(seg.id = seg2.id);
+		AssertFalse(tamanhoOriginal+1 = len diag.segmentos);
+	);
+	
+	
+-- end InserirSegmento operations invalid	
+
 public TestEditarSegmento: () ==> ()
 TestEditarSegmento() ==
 	(
@@ -72,7 +181,27 @@ TestEditarSegmento() ==
 		AssertTrue(tamanho+1 = len diag.segmentos);
 	);
 
+-- TestEditarSegmento operations invalid
 
+-- testa editar um segmento com um nome vazio
+public TestEditarSegmentoInt: () ==> ()
+TestEditarSegmentoInt() ==
+	(
+		dcl seg : Segmento := new Segmento("s", geradorId());
+		dcl seg2: Segmento;
+		dcl tamanho : nat := len diag.segmentos;
+		diag.inserirSegmento(seg, 1);
+		
+		diag.editarSegmento(1, ""); -- deve falhar aqui
+		
+		seg2 := diag.getSegmento(1);
+		AssertTrue(seg2.nome = "s");
+		AssertTrue(seg.id = seg2.id);
+		AssertTrue(tamanho+1 = len diag.segmentos);
+	);
+
+-- end TestEditarSegmento operations invalid
+		
 public TestInserirObjeto : () ==> ()
 TestInserirObjeto () ==
 	(
@@ -85,6 +214,55 @@ TestInserirObjeto () ==
 		AssertTrue(obj.id = obj2.id);
 		AssertTrue(tamanho+1 = len diag.objetos);
 	);
+	
+-- TestInserirObjeto operations invalid
+public TestInserirObjetoRepetido : () ==> ()
+TestInserirObjetoRepetido () ==
+	(
+		dcl id1 : nat := geradorId();
+		
+		dcl obj : Objeto := new Objeto("nome1", id1, "Actor");
+		dcl obj2 : Objeto := new Objeto("nome1", id1, "Actor");
+		dcl obj3: Objeto;
+		
+		dcl tamanho : nat := len diag.objetos;
+		diag.inserirObjeto(obj);
+		diag.inserirObjeto(obj2); -- deve falhar aqui
+		
+		obj3 := diag.getObjeto(len diag.objetos);
+		
+		AssertTrue(obj.nome = obj2.nome);
+		AssertTrue(obj.id = obj2.id);
+		AssertTrue(tamanho+1 = len diag.objetos); -- so inseriu um objeto
+	);
+	
+public TestInserirObjetoIndefinido : () ==> ()
+TestInserirObjetoIndefinido () ==
+	(
+		dcl obj2: Objeto;
+		
+		diag.inserirObjeto(obj2); -- deve falhar aqui
+		
+		AssertTrue(1 = 1); 
+	);
+	
+public TestInserirObjetoOrdemNegativa : () ==> ()
+TestInserirObjetoOrdemNegativa () ==
+	(
+		dcl id1 : nat := geradorId();
+		
+		dcl obj : Objeto := new Objeto("nome1", id1, "Actor");
+		dcl obj3: Objeto;
+		
+		dcl tamanho : nat := len diag.objetos;
+		diag.inserirObjeto(obj, -1);
+		
+		obj3 := diag.getObjeto(len diag.objetos);
+		
+		AssertTrue(tamanho = len diag.objetos); -- nao inseriu nenhum objeto
+	);
+-- end TestInserirObjeto operations invalid
+
 
 public TestEditarObjeto: () ==> ()
 TestEditarObjeto() ==
@@ -104,6 +282,43 @@ TestEditarObjeto() ==
 		AssertTrue(tamanho+1 = len diag.objetos);
 	);
 	
+-- testa editar um objeto tornando as suas propriedades vazias
+public TestEditarObjetoParamsVazios: () ==> ()
+TestEditarObjetoParamsVazios() ==
+	(
+		dcl obj : Objeto := new Objeto("nome1", geradorId(), "Actor");
+		dcl obj2: Objeto;
+		dcl tamanho : nat := len diag.objetos;
+		reset();
+		diag.inserirObjeto(obj, 1);
+		
+		diag.editarObjeto("", "", -1); -- deve falhar aqui
+		
+		obj2 := diag.getObjeto(1);
+		AssertFalse(obj2.nome = "nome2");
+		AssertFalse(obj.id = obj2.id);
+		AssertTrue(obj2.tipo = obj.tipo);
+		AssertTrue(tamanho+1 = len diag.objetos);
+	);
+
+-- testa editar um objeto com a sua ordem negativa
+public TestEditarObjetoParamsOrdemNegativa: () ==> ()
+TestEditarObjetoParamsOrdemNegativa() ==
+	(
+		dcl obj : Objeto := new Objeto("nome1", geradorId(), "Actor");
+		dcl obj2: Objeto;
+		dcl tamanho : nat := len diag.objetos;
+		reset();
+		diag.inserirObjeto(obj, 1);
+		
+		diag.editarObjeto("nome2", "Objeto", -1); -- deve falhar aqui
+		
+		obj2 := diag.getObjeto(1);
+		AssertFalse(obj2.nome = "nome2");
+		AssertFalse(obj.id = obj2.id);
+		AssertTrue(obj2.tipo = obj.tipo);
+		AssertTrue(tamanho+1 = len diag.objetos);
+	);	
 
 
 public TestEliminarSegmento : () ==> ()
@@ -129,6 +344,57 @@ TestEliminarSegmento () ==
 		AssertTrue(tamanho-1 = len diag.segmentos);
 	);
 	
+-- tenta eliminar segmento quando ja nao existe nenhum
+public TestEliminarSegmentoNenhum : () ==> ()
+TestEliminarSegmentoNenhum () ==
+	(
+		dcl seg : Segmento := new Segmento("nome1", geradorId());
+		dcl seg1: Segmento := new Segmento("nome2", geradorId());
+		dcl seg11: Segmento := new Segmento("nome3", geradorId());
+
+		dcl tamanho : nat;
+		reset();
+		diag.inserirSegmento(seg);
+		diag.inserirSegmento(seg1);
+		diag.inserirSegmento(seg11);
+		tamanho := len diag.segmentos;
+		
+		
+		diag.eliminarSegmento(1);
+		diag.eliminarSegmento(1);
+		diag.eliminarSegmento(1);
+		diag.eliminarSegmento(1); -- deve falhar aqui
+		
+		for all s in set elems diag.segmentos do
+			AssertTrue(s.id <> seg.id);
+			
+		AssertTrue(tamanho-3 = len diag.segmentos);
+	);
+	
+-- tenta eliminar um segmento numa posicao nao existente
+public TestEliminarSegmentoOrdemNA : () ==> ()
+TestEliminarSegmentoOrdemNA () ==
+	(
+		dcl seg : Segmento := new Segmento("nome1", geradorId());
+		dcl seg1: Segmento := new Segmento("nome2", geradorId());
+		dcl seg11: Segmento := new Segmento("nome3", geradorId());
+
+		dcl tamanho : nat;
+		reset();
+		diag.inserirSegmento(seg);
+		diag.inserirSegmento(seg1);
+		diag.inserirSegmento(seg11);
+		tamanho := len diag.segmentos;
+		
+		
+		diag.eliminarSegmento(-2); -- deve falhar aqui
+		
+		for all s in set elems diag.segmentos do
+			AssertTrue(s.id <> seg.id);
+			
+		AssertTrue(tamanho = len diag.segmentos);
+	);
+	
 public TestEliminarObjeto : () ==> ()
 TestEliminarObjeto () ==
 	(
@@ -149,5 +415,55 @@ TestEliminarObjeto () ==
 			
 		AssertTrue(tamanho-1 = len diag.objetos);
 	);	
+	
+-- testa eliminar um objeto numa posicao nao existente
+public TestEliminarObjetoPosicaoNA : () ==> ()
+TestEliminarObjetoPosicaoNA () ==
+	(
+		dcl obj : Objeto := new Objeto("nome1", geradorId(), "Actor");
+		dcl obj1: Objeto := new Objeto("nome2", geradorId(), "Object");
+		dcl obj11: Objeto := new Objeto("nome3", geradorId(), "Actor");
+		
+		dcl tamanho : nat;
+		reset();
+		diag.inserirObjeto(obj);
+		diag.inserirObjeto(obj1);
+		diag.inserirObjeto(obj11);
+		tamanho := len diag.objetos;
+		
+		diag.eliminarObjeto(-2); -- deve falhar aqui
+		
+		for all s in set elems diag.objetos do
+			AssertTrue(s.id <> obj1.id);
+			
+		AssertTrue(tamanho = len diag.objetos);
+	);
+	
+-- testa eliminar um objeto quando ja nao existe nenhum
+public TestEliminarObjetoNaoExiste : () ==> ()
+TestEliminarObjetoNaoExiste () ==
+	(
+		dcl obj : Objeto := new Objeto("nome1", geradorId(), "Actor");
+		dcl obj1: Objeto := new Objeto("nome2", geradorId(), "Object");
+		dcl obj11: Objeto := new Objeto("nome3", geradorId(), "Actor");
+		
+		dcl tamanho : nat;
+		reset();
+		diag.inserirObjeto(obj);
+		diag.inserirObjeto(obj1);
+		diag.inserirObjeto(obj11);
+		tamanho := len diag.objetos;
+		
+		diag.eliminarObjeto(1);
+		diag.eliminarObjeto(1);
+		diag.eliminarObjeto(1);
+		diag.eliminarObjeto(1); -- deve falhar aqui
+		
+		for all s in set elems diag.objetos do
+			AssertTrue(s.id <> obj1.id);
+			
+		AssertTrue(tamanho-3 = len diag.objetos);
+	);
+
 
 end DiagramaTeste
