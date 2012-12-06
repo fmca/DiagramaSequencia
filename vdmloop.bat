@@ -11,5 +11,5 @@ set S6=BlocoLoop.rtf
 set S7=Objeto.rtf
 
 
-"C:\Program Files (x86)\The VDM++ Toolbox Lite v8.3.1\bin\vppde" -p -R vdm.tc %S1% %S2%
+"C:\Program Files (x86)\The VDM++ Toolbox Lite v8.3.1\bin\vppde" -p -R vdm.tc %S1% %S2% %S3% %S4% %S5% %S6% %S7%
 for /R %%f in (*.arg) do call vdmtest "%%f"

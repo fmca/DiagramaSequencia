@@ -1,1 +1,1 @@
-new TesteDiagrama().TestInserirObjeto()
+new DiagramaTeste().TestInserirObjeto()
