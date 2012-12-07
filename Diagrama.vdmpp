@@ -207,17 +207,18 @@ class Diagrama
 				)
 				else
 				(
-					
+					segResp:=segs^[segmentos(ord)];
 					if(ult) then 
-					(									
-						return;
+					(
+						sequencias := sequencias ^ [segResp];									
+						
 					)else
 					(
-						segResp:=segs^[segmentos(ord)];
+						
 						calcularRecursivo(ord+1, segResp);
 					);
 							
-
+					return;
 				);
 		
 	);
