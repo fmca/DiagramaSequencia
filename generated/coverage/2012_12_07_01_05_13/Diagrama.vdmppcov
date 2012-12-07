@@ -6,7 +6,6 @@ class Diagrama
 	public objetos : seq of Objeto:= [];
 	public titulo : seq of char:=[];
 	public limite : int:=5;
-	public sequencias : seq of seq of Segmento := [];
 	
 	
 	operations
@@ -144,84 +143,97 @@ class Diagrama
 		
 		
 	---------------------------------------------
+	
 	public calcularSequencias: () ==> seq of seq of Segmento
 	calcularSequencias() ==
 		(
-			dcl resp: seq of seq of Segmento:=[];
-			calcularRecursivo(1, []);
-			resp:= sequencias;
-			sequencias:=[];
-			return resp;
-		);
-	
-	
-	public calcularRecursivo: nat1 * seq of Segmento ==> ()
-	calcularRecursivo(ord, segs) ==
-	(
-		dcl seg: seq of Segmento:= [];
-		dcl segResp: seq of Segmento:= [];
-		dcl ult: bool:=false;
-		if(ord = len segmentos) then (ult := true;); ----------(sequencias := sequencias ^ [segs]);
-		
-		if(isofclass(BlocoLoop, segmentos(ord))) then
-			(
-				for x=1 to limite do
-					(
-							seg:=seg^hd segmentos(ord).getSequencias();
-							segResp:= segs^seg;
-							if(ult) then 
-								(
-									sequencias := sequencias ^ [segResp];
-								)else
-								(
-									calcularRecursivo(ord+1, segResp);
-								);
-					);
+			dcl seqsgmts: seq of seq of Segmento:= [];
+			dcl seqsgmt: seq of Segmento:=[];
+			dcl l: nat:= 1;
+			dcl alts: nat:=1;
+			dcl loops: nat:=1;
+			dcl c: nat:=1;
+			dcl qtdAlts: nat:=1;
+			dcl kAltAux: nat :=1;
+			dcl j2: nat :=1;
+			
+			dcl k : nat :=1;
+			dcl kAlt: nat :=1;
 					
-					if(ult) then return;
-								
+					
+			for all s in set elems segmentos do 
+				if(isofclass(BlocoLoop, s)) then 
+					(
+						loops := limite * loops;
 					)
-				elseif (isofclass(BlocoAlt, segmentos(ord))) then
-				(
-					
-					seg:=segmentos(ord).getSequencias()(1);
-					segResp:=segs^seg;
-					if(ult) then 
-								(
-									sequencias := sequencias ^ [segResp];
-								)else
-								(
-									calcularRecursivo(ord+1, segResp);
-								);
-								
-					seg:=segmentos(ord).getSequencias()(2);
-					segResp:=segs^seg;
-					if(ult) then 
-								(
-									sequencias := sequencias ^ [segResp];
-								)else
-								(
-									calcularRecursivo(ord+1, segResp);
-								);
-					if(ult) then return;
-				)
-				else
-				(
-					
-					if(ult) then 
-					(									
-						return;
-					)else
+				elseif(isofclass(BlocoAlt, s)) then
 					(
-						segResp:=segs^[segmentos(ord)];
-						calcularRecursivo(ord+1, segResp);
+						qtdAlts:=qtdAlts+1;
+						alts:=2 * alts;
 					);
-							
-
+			if(qtdAlts>2) then ( qtdAlts := qtdAlts-1);
+					
+			l := loops*alts;	
+			
+				
+			for i=1 to l do
+				(
+					
+					
+					seqsgmt:=[];
+					j2:=1;
+					
+					for j=1 to len(segmentos) do
+						(
+							if isofclass(Mensagem, segmentos(j)) then 
+								(
+									seqsgmt:= seqsgmt ^ [segmentos(j)]
+								)
+							elseif isofclass(BlocoLoop, segmentos(j)) then
+								( 
+									
+									if(k > alts) then
+										(
+											c:=c+1;
+											k:=1;
+										);
+									
+										
+									for x=1 to c do
+										(	
+											seqsgmt:= seqsgmt ^ hd segmentos(j).getSequencias();
+										);
+								    k:=k+1;
+								)
+							elseif isofclass(BlocoAlt, segmentos(j)) then
+								(
+									if(i=alts) then (kAltAux := 0;);
+									
+									if(kAltAux<>0) then 
+									(
+										kAltAux:=j2;
+									);
+									if(i-j = qtdAlts) then
+									(
+										 kAltAux :=0;
+									);
+									
+									kAlt := ((i+kAltAux) mod 2) + 1;
+									
+									seqsgmt:= seqsgmt ^ segmentos(j).getSequencias()(kAlt);
+									j2:=j2+1;
+								
+								)
+							else 
+								(
+									seqsgmt:= seqsgmt ^ [segmentos(j)]
+								);
+						);
+					seqsgmts := seqsgmts ^ [seqsgmt];
 				);
-		
-	);
-	---------------------------------------------
+				
+				return seqsgmts;
+		);
 	
 		
 end Diagrama
