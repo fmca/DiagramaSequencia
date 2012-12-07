@@ -2,7 +2,7 @@ class DiagramaTeste
 
 instance variables
 
-public diag : Diagrama := new Diagrama("teste", 10);
+public diag : Diagrama := new Diagrama("teste", 2);
 public id: nat1 := 1;
 
 
@@ -19,7 +19,7 @@ public AssertFalse : bool ==> ()
 	
 public reset: () ==> ()
 reset() == 
-	diag := new Diagrama("teste", 10);
+	diag := new Diagrama("teste", 2);
 	
 	
 public geradorId: () ==> nat1
@@ -49,24 +49,34 @@ public TestInserirSegmentoOrdem: () ==> ()
 TestInserirSegmentoOrdem() ==
 
 	(
-		
+
 		dcl seg : Segmento := new Segmento("s", geradorId());
 		dcl segAux : Segmento := new Segmento("s", geradorId());
 		dcl seg2: Segmento;
 		dcl tamanho : nat ;
+		dcl obj: Objeto:= new Objeto("s", geradorId(), "Unit");
 		
-		diag.inserirSegmento(segAux);
+		diag.inserirObjeto(obj);
+		diag.inserirSegmento(new Mensagem("s", geradorId(), "message", obj, obj));
+		diag.inserirSegmento(new Segmento("s2", geradorId()));
+		diag.inserirSegmento(new Segmento("s3", geradorId()));
+		
 		tamanho:= len diag.segmentos;
 		diag.inserirSegmento(seg, 1);
+		
+		diag.inserirSegmento(segAux, 2);
 		
 		seg2 := diag.getSegmento(1);
 		AssertTrue(seg.nome = seg2.nome);
 		AssertTrue(seg.id = seg2.id);
-		AssertTrue(tamanho+1 = len diag.segmentos);
+		
+		seg2 := diag.getSegmento(2);
+		AssertTrue(segAux.nome = seg2.nome);
+		AssertTrue(segAux.id = seg2.id);
+		
+		AssertTrue(tamanho+2 = len diag.segmentos);
 	);
-
-	
--- end InserirSegmento operations invalid	
+		
 
 public TestEditarSegmento: () ==> ()
 TestEditarSegmento() ==
@@ -103,7 +113,35 @@ TestInserirObjeto () ==
 		AssertTrue(tamanho+1 = len diag.objetos);
 	);
 	
+public TestInserirObjetoOrdem: () ==> ()
+TestInserirObjetoOrdem() ==
 
+	(
+
+		dcl obj : Objeto := new Objeto("s", geradorId(), "Actor");
+		dcl objAux : Objeto := new Objeto("s", geradorId(), "Object");
+		dcl obj2: Objeto;
+		dcl tamanho : nat ;
+		
+		diag.inserirObjeto(new Objeto("s", geradorId(), "Actor"));
+		diag.inserirObjeto(new Objeto("s2", geradorId(), "Unit"));
+		diag.inserirObjeto(new Objeto("s3", geradorId(), "Actor"));
+		
+		tamanho:= len diag.objetos;
+		diag.inserirObjeto(obj, 1);
+		
+		diag.inserirObjeto(objAux, 2);
+		
+		obj2 := diag.getObjeto(1);
+		AssertTrue(obj.nome = obj2.nome);
+		AssertTrue(obj.id = obj2.id);
+		
+		obj2 := diag.getObjeto(2);
+		AssertTrue(objAux.nome = obj2.nome);
+		AssertTrue(objAux.id = obj2.id);
+		
+		AssertTrue(tamanho+2 = len diag.objetos);
+	);
 	
 
 	
@@ -133,6 +171,7 @@ TestEditarObjeto() ==
 public TestEliminarSegmento : () ==> ()
 TestEliminarSegmento () ==
 	(
+		
 		dcl seg : Segmento := new Segmento("nome1", geradorId());
 		dcl seg1: Segmento := new Segmento("nome2", geradorId());
 		dcl seg11: Segmento := new Segmento("nome3", geradorId());
@@ -146,11 +185,15 @@ TestEliminarSegmento () ==
 		
 		
 		diag.eliminarSegmento(1);
+		diag.eliminarSegmento(2);
 		
 		for all s in set elems diag.segmentos do
-			AssertTrue(s.id <> seg.id);
+			(
+				AssertTrue(s.id <> seg.id);
+				AssertTrue(s.id <> seg11.id);
+			);
 			
-		AssertTrue(tamanho-1 = len diag.segmentos);
+		AssertTrue(tamanho-2 = len diag.segmentos);
 	);
 	
 
@@ -163,19 +206,70 @@ TestEliminarObjeto () ==
 		dcl obj : Objeto := new Objeto("nome1", geradorId(), "Actor");
 		dcl obj1: Objeto := new Objeto("nome2", geradorId(), "Object");
 		dcl obj11: Objeto := new Objeto("nome3", geradorId(), "Actor");
+		dcl msg: Mensagem:= new Mensagem("msg", geradorId(), "message", obj, obj11);
+		dcl seg: Segmento:= new Segmento("msg2", geradorId());
 		
 		dcl tamanho : nat;
 		reset();
 		diag.inserirObjeto(obj);
 		diag.inserirObjeto(obj1);
 		diag.inserirObjeto(obj11);
+		diag.inserirSegmento(msg);
+		diag.inserirSegmento(seg);
 		tamanho := len diag.objetos;
+		diag.eliminarObjeto(1);
 		diag.eliminarObjeto(2);
 		
 		for all s in set elems diag.objetos do
-			AssertTrue(s.id <> obj1.id);
-			
-		AssertTrue(tamanho-1 = len diag.objetos);
+		(
+			AssertTrue(s.id <> obj.id);
+			AssertTrue(s.id <> obj11.id);
+		);
+		
+		for all s in set elems diag.segmentos do
+		(
+			AssertTrue(s.id <> msg.id);
+		);
+		
+		AssertTrue(tamanho-2 = len diag.objetos);
+	);	
+
+
+public TestCalcularSequencias : () ==> ()
+TestCalcularSequencias () ==
+	(
+		dcl obj : Objeto := new Objeto("nome1", geradorId(), "Actor");
+		dcl obj1: Objeto := new Objeto("nome2", geradorId(), "Object");
+		dcl obj11: Objeto := new Objeto("nome3", geradorId(), "Actor");
+		dcl msg: Mensagem:= new Mensagem("msg", geradorId(), "message", obj, obj1);
+		dcl msg2: Mensagem:= new Mensagem("msg", geradorId(), "message", obj1, obj11);
+		dcl msg3: Mensagem:= new Mensagem("msg", geradorId(), "message", obj1, obj);
+		dcl msg4: Mensagem:= new Mensagem("msg", geradorId(), "message", obj11, obj1);
+		dcl msg5: Mensagem:= new Mensagem("msg", geradorId(), "action", obj1, obj1);
+		dcl l: BlocoLoop:= new BlocoLoop("loop", geradorId(), [msg2]);
+		dcl ba: BlocoAlt:= new BlocoAlt("alt", geradorId(), [msg3], [msg4]);
+		
+		dcl conjSeq: set of seq of Segmento:={};
+		
+		reset();
+		diag.inserirObjeto(obj);
+		diag.inserirObjeto(obj1);
+		diag.inserirObjeto(obj11);
+		diag.inserirSegmento(msg);
+		conjSeq:= elems diag.calcularSequencias();
+		AssertTrue(conjSeq = {[msg]});
+		
+		diag.inserirSegmento(l);
+		conjSeq:= elems diag.calcularSequencias();
+		AssertTrue(conjSeq = {[msg, msg2], [msg, msg2, msg2]});
+		
+		diag.inserirSegmento(ba);		
+		conjSeq:= elems diag.calcularSequencias();		
+		AssertTrue(conjSeq = {[msg, msg2, msg3], [msg, msg2, msg2, msg3], [msg, msg2, msg4], [msg, msg2, msg2, msg4]});
+		
+		diag.inserirSegmento(msg5);
+		conjSeq:= elems diag.calcularSequencias();		
+		AssertTrue(conjSeq = {[msg, msg2, msg3, msg5], [msg, msg2, msg2, msg3, msg5], [msg, msg2, msg4, msg5], [msg, msg2, msg2, msg4, msg5]});
 	);	
 
 
