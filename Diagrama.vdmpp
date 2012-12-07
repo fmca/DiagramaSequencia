@@ -155,7 +155,7 @@ class Diagrama
 		);
 	
 	
-	public calcularRecursivo: nat1 * seq of Segmento ==> ()
+	private calcularRecursivo: nat1 * seq of Segmento ==> ()
 	calcularRecursivo(ord, segs) ==
 	(
 		dcl seg: seq of Segmento:= [];
